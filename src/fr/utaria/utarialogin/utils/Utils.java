@@ -17,20 +17,20 @@ import java.util.Formatter;
 public class Utils {
 
 	public static void    preparePlayer(final Player player) {
-		Bukkit.getScheduler().runTaskLater(UtariaLogin.getInstance(), new Runnable() {
-			@Override
-			public void run() {
-				// On cache le joueur
-				player.setGameMode(GameMode.SPECTATOR);
-				player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 1));
+		Bukkit.getScheduler().runTaskLater(UtariaLogin.getInstance(), () -> {
+			// On cache le joueur
+			player.setGameMode(GameMode.SPECTATOR);
+			player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 1));
 
-				// On lui enlève les effets
-				player.removePotionEffect(PotionEffectType.BLINDNESS);
-				player.removePotionEffect(PotionEffectType.SLOW);
+			// On lui enlève les effets
+			player.removePotionEffect(PotionEffectType.BLINDNESS);
+			player.removePotionEffect(PotionEffectType.SLOW);
 
-				// On lui envoie un message
-				TitleUtils.displayTitleToPlayer("Bienvenue sur Utaria !", "Ouvrez le tchat pour vous connecter", ChatColor.YELLOW, ChatColor.GRAY, player);
-			}
+			// On cache tout le monde pour tout le monde
+			Utils.hideAllForAll();
+
+			// On lui envoie un message
+			TitleUtils.displayTitleToPlayer("Bienvenue sur Utaria !", "Ouvrez le tchat pour vous connecter", ChatColor.YELLOW, ChatColor.GRAY, player);
 		}, 15L);
 	}
 
@@ -56,6 +56,12 @@ public class Utils {
 		}
 
 		return sha1;
+	}
+
+	private static void hideAllForAll() {
+		for (Player p1 : Bukkit.getOnlinePlayers())
+			for (Player p2 : Bukkit.getOnlinePlayers())
+				p1.hidePlayer(p2);
 	}
 
 

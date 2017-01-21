@@ -2,3 +2,4 @@ name: UtariaLogin
 author: Utarwyn
 version: 1.0.0
 main: fr.utaria.utarialogin.UtariaLogin
+depend: [UtariaAPI]

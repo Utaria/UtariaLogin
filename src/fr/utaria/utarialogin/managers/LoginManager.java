@@ -65,53 +65,50 @@ public class LoginManager {
 
 
 	public void tryToLogPlayer(final Player player) {
-		TaskManager.runTaskLater(new Runnable() {
-			@Override
-			public void run() {
+		TaskManager.runTaskLater(() -> {
 
-				// Le joueur n'est pas connecté, il doit donc le faire.
-				if( !UtariaLogin.getLoginManager().playerIsLogged(player) ) {
-					boolean registered = UtariaLogin.getAccountManager().playerRegistered(player);
+			// Le joueur n'est pas connecté, il doit donc le faire.
+			if( !UtariaLogin.getLoginManager().playerIsLogged(player) ) {
+				boolean registered = UtariaLogin.getAccountManager().playerRegistered(player);
 
-					PlayerUtils.sendHorizontalLine(player, ChatColor.GOLD);
+				PlayerUtils.sendHorizontalLine(player, ChatColor.GOLD);
+				player.sendMessage(" ");
+
+				if( registered ) {
+					PlayerUtils.sendCenteredMessage(player, "§e§lConnexion");
+					player.sendMessage(" ");
+					PlayerUtils.sendCenteredMessage(player, "§7Bienvenue sur §b§lUtaria§7 !");
+					PlayerUtils.sendCenteredMessage(player, "§7Tapez votre mot de passe dans le tchat");
+					PlayerUtils.sendCenteredMessage(player, "§7pour vous connecter à Utaria.");
 					player.sendMessage(" ");
 
-					if( registered ) {
-						PlayerUtils.sendCenteredMessage(player, "§e§lConnexion");
-						player.sendMessage(" ");
-						PlayerUtils.sendCenteredMessage(player, "§7Bienvenue sur §b§lUtaria§7 !");
-						PlayerUtils.sendCenteredMessage(player, "§7Tapez votre mot de passe dans le tchat");
-						PlayerUtils.sendCenteredMessage(player, "§7pour vous connecter à Utaria.");
-						player.sendMessage(" ");
-
-						// Petit son
-						player.playSound(player.getLocation(), Sound.NOTE_PIANO, 1f, 1f);
-					} else {
-						PlayerUtils.sendCenteredMessage(player, "§e§lInscription");
-						player.sendMessage(" ");
-						PlayerUtils.sendCenteredMessage(player, "§7Bienvenue sur §b§lUtaria§7 !");
-						PlayerUtils.sendCenteredMessage(player, "§7Tapez un mot de passe dans le tchat");
-						PlayerUtils.sendCenteredMessage(player, "§7pour pouvoir jouer dès maintenant sur §eUtaria§7 !");
-						player.sendMessage(" ");
-
-						// Petit son
-						player.playSound(player.getLocation(), Sound.NOTE_PIANO, 1f, 1f);
-					}
-
-					player.sendMessage(" ");
-					PlayerUtils.sendHorizontalLine(player, ChatColor.GOLD);
-
-
-					// On attends que le joueur tape le mot de passe dans le tchat
-					UtariaLogin.getLoginManager().waitForPassword(player);
-
+					// Petit son
+					player.playSound(player.getLocation(), Sound.NOTE_PIANO, 1f, 1f);
 				} else {
-					// Le joueur est déjà connecté, donc on le redirige automatiquement
-					PlayerUtils.sendSuccessMessage(player, "Vous êtes déjà connecté.");
-					UtariaLogin.getLoginManager().redirectPlayer(player);
+					PlayerUtils.sendCenteredMessage(player, "§e§lInscription");
+					player.sendMessage(" ");
+					PlayerUtils.sendCenteredMessage(player, "§7Bienvenue sur §b§lUtaria§7 !");
+					PlayerUtils.sendCenteredMessage(player, "§7Tapez un mot de passe dans le tchat");
+					PlayerUtils.sendCenteredMessage(player, "§7pour pouvoir jouer dès maintenant sur §eUtaria§7 !");
+					player.sendMessage(" ");
+
+					// Petit son
+					player.playSound(player.getLocation(), Sound.NOTE_PIANO, 1f, 1f);
 				}
 
+				player.sendMessage(" ");
+				PlayerUtils.sendHorizontalLine(player, ChatColor.GOLD);
+
+
+				// On attends que le joueur tape le mot de passe dans le tchat
+				UtariaLogin.getLoginManager().waitForPassword(player);
+
+			} else {
+				// Le joueur est déjà connecté, donc on le redirige automatiquement
+				PlayerUtils.sendSuccessMessage(player, "Vous êtes déjà connecté.");
+				UtariaLogin.getLoginManager().redirectPlayer(player);
 			}
+
 		}, 1L);
 	}
 
@@ -283,15 +280,10 @@ public class LoginManager {
 	}
 	public void clearExpiredSessions() {
 		long now = System.currentTimeMillis();
-		Iterator<Map.Entry<UUID, Long>> plUuidIterator = this.playersSession.entrySet().iterator();
 
-		while (plUuidIterator.hasNext()) {
-			long begin = plUuidIterator.next().getValue();
+		// On supprime toutes les sessions perimées
+		this.playersSession.entrySet().removeIf(set -> now - set.getValue() > UtariaLogin.SESSION_TIME * 1000);
 
-			// Si la session est périmée, on la supprime
-			if( now - begin > UtariaLogin.SESSION_TIME * 1000 )
-				plUuidIterator.remove();
-		}
 	}
 	public void clearLoginCacheFor(Player player) {
 		UUID uid = player.getUniqueId();

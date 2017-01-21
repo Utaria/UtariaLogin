@@ -1,5 +1,6 @@
 package fr.utaria.utarialogin;
 
+import com.utaria.utariaapi.database.Database;
 import fr.utaria.utarialogin.listeners.ChatListener;
 import fr.utaria.utarialogin.listeners.JoinListener;
 import fr.utaria.utarialogin.listeners.LeaveListener;
@@ -19,6 +20,7 @@ public class UtariaLogin extends JavaPlugin {
 
 
 	private static UtariaLogin _instance;
+	private static Database    _database;
 
 	private static AccountManager _accountManager;
 	private static LoginManager   _loginManager;
@@ -28,10 +30,16 @@ public class UtariaLogin extends JavaPlugin {
 		// On ajoute l'instance du plugin en mémoire
 		_instance = this;
 
+
+		// On crée l'instance de connexion à la base de données
+		_database = new Database();
+
+
 		// On enregistre les écouteurs d'évènements
 		getServer().getPluginManager().registerEvents(new JoinListener() , this);
 		getServer().getPluginManager().registerEvents(new ChatListener() , this);
 		getServer().getPluginManager().registerEvents(new LeaveListener(), this);
+
 
 		// On enregistre les gestionnaires
 		_accountManager = new AccountManager();
@@ -50,6 +58,9 @@ public class UtariaLogin extends JavaPlugin {
 
 
 	public static UtariaLogin getInstance() { return _instance; }
+	public static Database    getDB() {
+		return _database;
+	}
 
 	public static AccountManager getAccountManager() { return _accountManager; }
 	public static LoginManager   getLoginManager() { return _loginManager; }

@@ -1,9 +1,7 @@
 package fr.utaria.utarialogin.managers;
 
-import com.utaria.utariaapi.database.Database;
 import com.utaria.utariaapi.database.DatabaseSet;
 import fr.utaria.utarialogin.UtariaLogin;
-import fr.utaria.utarialogin.utils.Utils;
 import org.bukkit.entity.Player;
 
 import java.util.*;
@@ -19,7 +17,7 @@ public class AccountManager {
 		if( this.playersRegistered.containsKey(player.getUniqueId()) )
 			return this.playersRegistered.get(player.getUniqueId());
 
-		DatabaseSet set = new Database().findFirst(UtariaLogin.PLAYERS_DB_TABLE, DatabaseSet.makeConditions(
+		DatabaseSet set = UtariaLogin.getDB().findFirst(UtariaLogin.PLAYERS_DB_TABLE, DatabaseSet.makeConditions(
 			"uuid", player.getUniqueId().toString()
 		));
 
@@ -32,7 +30,7 @@ public class AccountManager {
 
 	public boolean tryRegisterPlayer(Player player, String password) {
 
-		new Database().request(
+		UtariaLogin.getDB().request(
 				"UPDATE " + UtariaLogin.PLAYERS_DB_TABLE + " SET " +
 				"password = SHA1(?) WHERE uuid = ?",
 
@@ -43,7 +41,7 @@ public class AccountManager {
 	}
 	public boolean tryLoginPlayer(Player player, String password) {
 		// TODO Modifier et faire une requête directe, pour éviter les soucis.
-		List<DatabaseSet> sets = new Database().request(
+		List<DatabaseSet> sets = UtariaLogin.getDB().request(
 				"SELECT password FROM " + UtariaLogin.PLAYERS_DB_TABLE + " " +
 				"WHERE uuid = ? AND password = SHA1(?)",
 

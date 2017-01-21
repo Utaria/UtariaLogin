@@ -11,7 +11,6 @@ public class ClearSessionsTask implements Runnable {
 		Bukkit.getScheduler().runTaskTimerAsynchronously(UtariaLogin.getInstance(), this, 0, 20L * 60);
 	}
 
-
 	@Override
 	public void run() {
 		// On supprime les sessions de joueurs qui sont périmées
