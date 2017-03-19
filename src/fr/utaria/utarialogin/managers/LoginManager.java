@@ -13,22 +13,23 @@ import java.util.*;
 
 public class LoginManager {
 
-	private Map<UUID, Long>   playersSession = new HashMap<>();
-	private Map<UUID, Long>   joinTime       = new HashMap<>();
-	private Map<UUID, String> firstPasswords = new HashMap<>();
-	private List<UUID>        waitingPlayers = new ArrayList<>();
+	private Map<UUID, LoginSession> playersSession = new HashMap<>();
+	private Map<UUID, Long>         joinTime       = new HashMap<>();
+	private Map<UUID, String>       firstPasswords = new HashMap<>();
+	private List<UUID>              waitingPlayers = new ArrayList<>();
 
 
-	public boolean playerIsLogged(Player player) {
+	private boolean playerIsLogged(Player player) {
 		if( !this.playersSession.containsKey(player.getUniqueId()) ) return false;
-		long now = System.currentTimeMillis();
+		long   now      = System.currentTimeMillis();
+		String playerIp = Utils.getPlayerIP(player);
 
-		// Si la session n'est plus valide, on la supprime, puis on retourne false
-		if(now - this.playersSession.get(player.getUniqueId()) > UtariaLogin.SESSION_TIME * 1000) {
+		LoginSession session = this.playersSession.get(player.getUniqueId());
 
+		// Si la session n'est plus valide (par le temps ou l'IP), on la supprime, puis on retourne faux.
+		if (now - session.getTime() > UtariaLogin.SESSION_TIME * 1000 || !playerIp.equals(session.getIP())) {
 			this.playersSession.remove(player.getUniqueId());
 			return false;
-
 		} else
 		// Sinon, tout est bon, la session du joueur est encore valide.
 			return true;
@@ -36,17 +37,17 @@ public class LoginManager {
 
 
 	/*  Gestion des premiers mots de passe tapés   */
-	public String  getFirstPasswordFor(Player player) {
+	private String  getFirstPasswordFor(Player player) {
 		if( this.firstPasswords.containsKey(player.getUniqueId()) )
 			return this.firstPasswords.get(player.getUniqueId());
 		else
 			return null;
 	}
-	public void    addFirstPasswordFor(Player player, String password) {
+	private void    addFirstPasswordFor(Player player, String password) {
 		if( !this.firstPasswords.containsKey(player.getUniqueId()) )
 			this.firstPasswords.put(player.getUniqueId(), password);
 	}
-	public void    removeFirstPasswordFor(Player player) {
+	private void    removeFirstPasswordFor(Player player) {
 		this.firstPasswords.remove(player.getUniqueId());
 	}
 
@@ -113,11 +114,7 @@ public class LoginManager {
 	}
 
 	/*  Traitement des mots de passe et des processus   */
-	public void waitForPassword(Player player) {
-		if( waitingPlayers.contains(player.getUniqueId()) ) return;
-		this.waitingPlayers.add(player.getUniqueId());
-	}
-	public void checkPassword(Player player, String password) {
+	public  void checkPassword(Player player, String password) {
 		// Si le serveur n'a pas demandé au joueur un mot de passe, on ne fait rien.
 		if( !this.waitingPlayers.contains(player.getUniqueId()) ) return;
 
@@ -151,37 +148,104 @@ public class LoginManager {
 		}
 
 	}
-	public void processLogin(final Player player, final String password) {
-		TaskManager.runTaskLater(new Runnable() {
-			@Override
-			public void run() {
-				// Le joueur est déjà inscrit, on regarde si le mot de passe correspond
-				// CONNEXION
-				boolean playerRegistered = UtariaLogin.getAccountManager().playerRegistered(player);
+	private void waitForPassword(Player player) {
+		if( waitingPlayers.contains(player.getUniqueId()) ) return;
+		this.waitingPlayers.add(player.getUniqueId());
+	}
+	private void processLogin(final Player player, final String password) {
+		TaskManager.runTaskLater(() -> {
+			// Le joueur est déjà inscrit, on regarde si le mot de passe correspond
+			// CONNEXION
+			boolean playerRegistered = UtariaLogin.getAccountManager().playerRegistered(player);
 
-				if( playerRegistered ) {
+			if( playerRegistered ) {
 
-					// Mot de passe correct, redirection
-					if( UtariaLogin.getAccountManager().tryLoginPlayer(player, password) ) {
-						PlayerUtils.sendSuccessMessage(player, "Vous êtes maintenant connecté.");
+				// Mot de passe correct, redirection
+				if( UtariaLogin.getAccountManager().tryLoginPlayer(player, password) ) {
+					PlayerUtils.sendSuccessMessage(player, "Vous êtes maintenant connecté.");
 
-						// Petit son
-						player.playSound(player.getLocation(), Sound.LEVEL_UP, 1f, 1f);
+					// Petit son
+					player.playSound(player.getLocation(), Sound.LEVEL_UP, 1f, 1f);
 
-						// On active la session du joueur et on le redirige vers le serveur hub
-						UtariaLogin.getLoginManager().activateSessionFor(player);
-						UtariaLogin.getLoginManager().redirectPlayer(player);
+					// On active la session du joueur et on le redirige vers le serveur hub
+					UtariaLogin.getLoginManager().activateSessionFor(player);
+					UtariaLogin.getLoginManager().redirectPlayer(player);
+				}
+				// Incorrect, on affiche un message d'erreur
+				else {
+					PlayerUtils.sendHorizontalLine(player, ChatColor.DARK_RED);
+					PlayerUtils.sendEmptyLine(player);
+					PlayerUtils.sendCenteredMessage(player, "§4§lMot de passe envoyé incorrect");
+					PlayerUtils.sendEmptyLine(player);
+					PlayerUtils.sendEmptyLine(player);
+
+					PlayerUtils.sendCenteredMessage(player, "§7Le mot de passe envoyé");
+					PlayerUtils.sendCenteredMessage(player, "§7est incorrect. Veuillez réessayez !");
+
+					PlayerUtils.sendEmptyLine(player);
+					PlayerUtils.sendEmptyLine(player);
+					PlayerUtils.sendHorizontalLine(player, ChatColor.DARK_RED);
+
+					// Petit son
+					player.playSound(player.getLocation(), Sound.NOTE_BASS_GUITAR, 1f, 1f);
+
+					// On attends que le joueur retape le mot de passe dans le tchat
+					UtariaLogin.getLoginManager().waitForPassword(player);
+				}
+
+			}
+			// Le joueur renseigne le mot de passe por l'inscription
+			// INSCRIPTION
+			else {
+
+				// Si le joueur tape son mot de passe pour la première fois
+				if ( UtariaLogin.getLoginManager().getFirstPasswordFor(player) == null ) {
+
+					PlayerUtils.sendHorizontalLine(player, ChatColor.GREEN);
+					PlayerUtils.sendEmptyLines(player, 3);
+					PlayerUtils.sendCenteredMessage(player, "§e§lVeuillez retaper votre mot de passe");
+					PlayerUtils.sendCenteredMessage(player, "§e§lune seconde fois pour confirmer.");
+					PlayerUtils.sendEmptyLines(player, 3);
+					PlayerUtils.sendHorizontalLine(player, ChatColor.GREEN);
+
+					// Petit son
+					player.playSound(player.getLocation(), Sound.NOTE_PIANO, 1f, 1f);
+
+					UtariaLogin.getLoginManager().addFirstPasswordFor(player, password);
+
+					// On attends que le joueur retape le mot de passe dans le tchat
+					UtariaLogin.getLoginManager().waitForPassword(player);
+				}
+				// Sinon, on regarde si les deux mots de passe sont les mêmes
+				else {
+					String firstPassword = UtariaLogin.getLoginManager().getFirstPasswordFor(player);
+
+					// Les deux mots de passe sont les mêmes, on finalise l'inscription
+					if (password.equals(firstPassword)) {
+
+						// On inscrit le joueur
+						if( UtariaLogin.getAccountManager().tryRegisterPlayer(player, password) ) {
+							PlayerUtils.sendSuccessMessage(player, "Vous êtes maintenant inscrit sur §bUtaria§a, merci !");
+							player.playSound(player.getLocation(), Sound.LEVEL_UP, 1f, 1f);
+
+							UtariaLogin.getLoginManager().redirectPlayer(player);
+						}
+						// Si un problème a eu lieu, on kick le joueur avec un message d'erreur (pas normal)
+						else {
+							player.kickPlayer("§cUne erreur a eu lieu lors de l'inscription, veuillez contacter un administrateur.");
+						}
+
 					}
-					// Incorrect, on affiche un message d'erreur
+					// Ils sont différents : on recommence de zéro
 					else {
 						PlayerUtils.sendHorizontalLine(player, ChatColor.DARK_RED);
 						PlayerUtils.sendEmptyLine(player);
-						PlayerUtils.sendCenteredMessage(player, "§4§lMot de passe envoyé incorrect");
+						PlayerUtils.sendCenteredMessage(player, "§4§lMots de passe incorrects");
 						PlayerUtils.sendEmptyLine(player);
 						PlayerUtils.sendEmptyLine(player);
 
-						PlayerUtils.sendCenteredMessage(player, "§7Le mot de passe envoyé");
-						PlayerUtils.sendCenteredMessage(player, "§7est incorrect. Veuillez réessayez !");
+						PlayerUtils.sendCenteredMessage(player, "§7Les deux mots de passe envoyés");
+						PlayerUtils.sendCenteredMessage(player, "§7ne correspondent pas. Retapez un mot de passe :");
 
 						PlayerUtils.sendEmptyLine(player);
 						PlayerUtils.sendEmptyLine(player);
@@ -190,106 +254,55 @@ public class LoginManager {
 						// Petit son
 						player.playSound(player.getLocation(), Sound.NOTE_BASS_GUITAR, 1f, 1f);
 
-						// On attends que le joueur retape le mot de passe dans le tchat
+						// On recommence la procédure de zéro
+						UtariaLogin.getLoginManager().removeFirstPasswordFor(player);
 						UtariaLogin.getLoginManager().waitForPassword(player);
 					}
-
 				}
-				// Le joueur renseigne le mot de passe por l'inscription
-				// INSCRIPTION
-				else {
 
-					// Si le joueur tape son mot de passe pour la première fois
-					if ( UtariaLogin.getLoginManager().getFirstPasswordFor(player) == null ) {
-
-						PlayerUtils.sendHorizontalLine(player, ChatColor.GREEN);
-						PlayerUtils.sendEmptyLines(player, 3);
-						PlayerUtils.sendCenteredMessage(player, "§e§lVeuillez retaper votre mot de passe");
-						PlayerUtils.sendCenteredMessage(player, "§e§lune seconde fois pour confirmer.");
-						PlayerUtils.sendEmptyLines(player, 3);
-						PlayerUtils.sendHorizontalLine(player, ChatColor.GREEN);
-
-						// Petit son
-						player.playSound(player.getLocation(), Sound.NOTE_PIANO, 1f, 1f);
-
-						UtariaLogin.getLoginManager().addFirstPasswordFor(player, password);
-
-						// On attends que le joueur retape le mot de passe dans le tchat
-						UtariaLogin.getLoginManager().waitForPassword(player);
-					}
-					// Sinon, on regarde si les deux mots de passe sont les mêmes
-					else {
-						String firstPassword = UtariaLogin.getLoginManager().getFirstPasswordFor(player);
-
-						// Les deux mots de passe sont les mêmes, on finalise l'inscription
-						if( firstPassword.equals(password) ) {
-
-							// On inscrit le joueur
-							if( UtariaLogin.getAccountManager().tryRegisterPlayer(player, password) ) {
-								PlayerUtils.sendSuccessMessage(player, "Vous êtes maintenant inscrit sur §bUtaria§a, merci !");
-								player.playSound(player.getLocation(), Sound.LEVEL_UP, 1f, 1f);
-
-								UtariaLogin.getLoginManager().redirectPlayer(player);
-							}
-							// Si un problème a eu lieu, on kick le joueur avec un message d'erreur (pas normal)
-							else {
-								player.kickPlayer("§cUne erreur a eu lieu lors de l'inscription, veuillez contacter un administrateur.");
-							}
-
-						}
-						// Ils sont différents : on recommence de zéro
-						else {
-							PlayerUtils.sendHorizontalLine(player, ChatColor.DARK_RED);
-							PlayerUtils.sendEmptyLine(player);
-							PlayerUtils.sendCenteredMessage(player, "§4§lMots de passe incorrects");
-							PlayerUtils.sendEmptyLine(player);
-							PlayerUtils.sendEmptyLine(player);
-
-							PlayerUtils.sendCenteredMessage(player, "§7Les deux mots de passe envoyés");
-							PlayerUtils.sendCenteredMessage(player, "§7ne correspondent pas. Retapez un mot de passe :");
-
-							PlayerUtils.sendEmptyLine(player);
-							PlayerUtils.sendEmptyLine(player);
-							PlayerUtils.sendHorizontalLine(player, ChatColor.DARK_RED);
-
-							// Petit son
-							player.playSound(player.getLocation(), Sound.NOTE_BASS_GUITAR, 1f, 1f);
-
-							// On recommence la procédure de zéro
-							UtariaLogin.getLoginManager().removeFirstPasswordFor(player);
-							UtariaLogin.getLoginManager().waitForPassword(player);
-						}
-					}
-
-				}
 			}
 		}, 1L);
 	}
-	public void redirectPlayer(Player player) {
+	private void redirectPlayer(Player player) {
 		PlayerUtils.sendMessage(player, "§7Redirection vers le serveur §6" + UtariaLogin.FALLBACK_SERVER + "§7.");
 		BungeeUtils.sendPlayerTo(player, UtariaLogin.FALLBACK_SERVER);
 	}
 
 
 	/*  Gestion des sessions de connexion   */
-	public void activateSessionFor(Player player) {
+	private void activateSessionFor(Player player) {
 		UUID uid = player.getUniqueId();
 
-		if( !this.playersSession.containsKey(uid) )
-			this.playersSession.put(uid, System.currentTimeMillis());
+		if (!this.playersSession.containsKey(uid))
+			this.playersSession.put(uid, new LoginSession(System.currentTimeMillis(), Utils.getPlayerIP(player)));
 	}
 	public void clearExpiredSessions() {
 		long now = System.currentTimeMillis();
 
 		// On supprime toutes les sessions perimées
-		this.playersSession.entrySet().removeIf(set -> now - set.getValue() > UtariaLogin.SESSION_TIME * 1000);
-
+		this.playersSession.entrySet().removeIf(set -> now - set.getValue().getTime() > UtariaLogin.SESSION_TIME * 1000);
 	}
 	public void clearLoginCacheFor(Player player) {
 		UUID uid = player.getUniqueId();
 
 		this.waitingPlayers.remove(uid);
 		this.firstPasswords.remove(uid);
+	}
+
+
+
+	private class LoginSession {
+		private long   time;
+		private String ip;
+
+		private LoginSession(long time, String ip) {
+			this.time = time;
+			this.ip   = ip;
+		}
+
+		private long   getTime() { return this.time; }
+		private String getIP  () { return this.ip;   }
+
 	}
 
 }

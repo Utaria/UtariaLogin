@@ -57,6 +57,9 @@ public class Utils {
 
 		return sha1;
 	}
+	public static String  getPlayerIP(Player player) {
+		return player.getAddress().getHostName();
+	}
 
 	private static void hideAllForAll() {
 		for (Player p1 : Bukkit.getOnlinePlayers())
