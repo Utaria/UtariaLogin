@@ -5,6 +5,7 @@ import com.utaria.utariaapi.database.Database;
 import fr.utaria.utarialogin.listeners.ChatListener;
 import fr.utaria.utarialogin.listeners.JoinListener;
 import fr.utaria.utarialogin.listeners.LeaveListener;
+import fr.utaria.utarialogin.listeners.WorldListener;
 import fr.utaria.utarialogin.managers.AccountManager;
 import fr.utaria.utarialogin.managers.LoginManager;
 import fr.utaria.utarialogin.utils.ClearSessionsTask;
@@ -35,6 +36,7 @@ public class UtariaLogin extends JavaPlugin {
 		getServer().getPluginManager().registerEvents(new JoinListener() , this);
 		getServer().getPluginManager().registerEvents(new ChatListener() , this);
 		getServer().getPluginManager().registerEvents(new LeaveListener(), this);
+		getServer().getPluginManager().registerEvents(new WorldListener(), this);
 
 
 		// On enregistre les gestionnaires
