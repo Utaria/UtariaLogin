@@ -38,7 +38,8 @@ public class Utils {
 		// Le mot de passe doit faire au moins 6 caractères
 		if( password.length() < 6 ) return false;
 
-		// ...
+		// Le mot de passe ne doit pas contenir d'espace
+		if (password.contains(" ")) return false;
 
 
 		return true;

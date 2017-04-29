@@ -121,30 +121,28 @@ public class LoginManager {
 
 		// Le mot de passe doit rentrer dans les contraintes de validation
 		// Sinon un message averti le joueur que le mot de passe est incorrect.
-		if( Utils.passwordIsValid(password) ) {
+		if (Utils.passwordIsValid(password)) {
 			// On stoppe l'attente, car le joueur n'a plus rien à rentrer.
 			this.waitingPlayers.remove(player.getUniqueId());
 
 			// On lance la procédure de vérification du mot de passe
 			this.processLogin(player, password);
 		} else {
-
 			PlayerUtils.sendHorizontalLine(player, ChatColor.DARK_RED);
 			PlayerUtils.sendEmptyLine(player);
 			PlayerUtils.sendCenteredMessage(player, "§4§lMot de passe envoyé invalide");
 			PlayerUtils.sendEmptyLine(player);
 
 			player.sendMessage("§7  §r§7 - Il doit comporter au moins §66 caractères§7.");
+			player.sendMessage("§7  §r§7 - Il ne doit pas contenir d'§6espace§7.");
 			player.sendMessage("§7  §r§7 - Ne communiquez §cJAMAIS §7votre mot de passe.");
 			player.sendMessage("§7  §r§7 - Retenez ce mot de passe, car il vous sera indispensable.");
 
-			PlayerUtils.sendEmptyLine(player);
 			PlayerUtils.sendEmptyLine(player);
 			PlayerUtils.sendHorizontalLine(player, ChatColor.DARK_RED);
 
 			// Petit son
 			player.playSound(player.getLocation(), Sound.NOTE_BASS_GUITAR, 1f, 1f);
-
 		}
 
 	}
