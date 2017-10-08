@@ -1,53 +1,27 @@
 package fr.utaria.utarialogin;
 
-import com.utaria.utariaapi.UtariaAPI;
-import com.utaria.utariaapi.database.Database;
-import fr.utaria.utarialogin.listeners.ChatListener;
-import fr.utaria.utarialogin.listeners.JoinListener;
-import fr.utaria.utarialogin.listeners.LeaveListener;
-import fr.utaria.utarialogin.listeners.WorldListener;
-import fr.utaria.utarialogin.managers.AccountManager;
-import fr.utaria.utarialogin.managers.LoginManager;
-import fr.utaria.utarialogin.utils.ClearSessionsTask;
-import fr.utaria.utarialogin.utils.FreezePlayerTask;
-import fr.utaria.utarialogin.utils.KickAFKPlayerTask;
-import org.bukkit.plugin.java.JavaPlugin;
+import fr.utaria.utariaapi.UtariaPlugin;
+import fr.utaria.utariadatabase.database.DatabaseManager;
+import fr.utaria.utarialogin.login.AccountManager;
+import fr.utaria.utarialogin.login.LoginManager;
+import fr.utaria.utarialogin.world.WorldManager;
 
-public class UtariaLogin extends JavaPlugin {
+public class UtariaLogin extends UtariaPlugin {
 
-	final public static String PLAYERS_DB_TABLE = "players";
-	final public static String FALLBACK_SERVER  =  "survie";
-	final public static int    SESSION_TIME     =       120;
-	final public static int    AFK_KICK_TIME    =        30;
-
-
-	private static UtariaLogin _instance;
-
-	private static AccountManager _accountManager;
-	private static LoginManager   _loginManager;
+	private static UtariaLogin instance;
 
 
 	public void onEnable() {
 		// On ajoute l'instance du plugin en mémoire
-		_instance = this;
+		instance = this;
 
-
-		// On enregistre les écouteurs d'évènements
-		getServer().getPluginManager().registerEvents(new JoinListener() , this);
-		getServer().getPluginManager().registerEvents(new ChatListener() , this);
-		getServer().getPluginManager().registerEvents(new LeaveListener(), this);
-		getServer().getPluginManager().registerEvents(new WorldListener(), this);
+		DatabaseManager.registerDatabase("global");
 
 
 		// On enregistre les gestionnaires
-		_accountManager = new AccountManager();
-		_loginManager   = new LoginManager();
-
-
-		// Lancement des tâches automatiques
-		new FreezePlayerTask();
-		new ClearSessionsTask();
-		new KickAFKPlayerTask();
+		new AccountManager();
+		new LoginManager();
+		new WorldManager();
 	}
 
 	public void onDisable() {
@@ -55,12 +29,6 @@ public class UtariaLogin extends JavaPlugin {
 	}
 
 
-	public static UtariaLogin getInstance() { return _instance; }
-	public static Database    getDB() {
-		return UtariaAPI.getDB();
-	}
-
-	public static AccountManager getAccountManager() { return _accountManager; }
-	public static LoginManager   getLoginManager() { return _loginManager; }
+	public static UtariaLogin getInstance() { return instance; }
 
 }
