@@ -1,7 +1,7 @@
 package fr.utaria.utarialogin.world;
 
-import fr.utaria.utariaapi.AbstractManager;
-import fr.utaria.utariaapi.util.Materials;
+import fr.utaria.utariacore.AbstractManager;
+import fr.utaria.utariacore.util.Materials;
 import fr.utaria.utarialogin.UtariaLogin;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -28,10 +28,10 @@ public class WorldManager extends AbstractManager {
 		this.world = Bukkit.getWorlds().get(0);
 		this.hubs  = new ArrayList<>();
 
-		this.hubs.add(new Location(this.world,  150, 80,   0, -145, 0));
-		this.hubs.add(new Location(this.world,    0, 79,   0, -140, 0));
-		this.hubs.add(new Location(this.world, -150, 78,   0,   40, 0));
-		this.hubs.add(new Location(this.world,    0, 79, 150,   20, 0));
+		this.hubs.add(new Location(this.world,  150.5, 80,   0.5, -145, 0));
+		this.hubs.add(new Location(this.world,    0.5, 79,   0.5, -140, 0));
+		this.hubs.add(new Location(this.world, -150.5, 78,   0.5,   40, 0));
+		this.hubs.add(new Location(this.world,    0.5, 79, 150.5,   20, 0));
 
 		new WorldTimeTask();
 	}

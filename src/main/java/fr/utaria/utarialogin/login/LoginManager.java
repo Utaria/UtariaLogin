@@ -1,11 +1,12 @@
 package fr.utaria.utarialogin.login;
 
-import fr.utaria.utariaapi.AbstractManager;
-import fr.utaria.utariaapi.util.PlayerUtil;
-import fr.utaria.utariaapi.util.ServerUtil;
-import fr.utaria.utariaapi.util.TaskUtil;
+import fr.utaria.utariacore.AbstractManager;
+import fr.utaria.utariacore.util.PlayerUtil;
+import fr.utaria.utariacore.util.ServerUtil;
+import fr.utaria.utariacore.util.TaskUtil;
 import fr.utaria.utarialogin.Config;
 import fr.utaria.utarialogin.UtariaLogin;
+import fr.utaria.utarialogin.message.MessageManager;
 import fr.utaria.utarialogin.util.UUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
@@ -15,6 +16,8 @@ import java.util.*;
 
 public class LoginManager extends AbstractManager {
 
+	private MessageManager messageManager;
+
 	private Map<UUID, LoginSession> playersSession = new HashMap<>();
 	private Map<UUID, Long>         joinTime       = new HashMap<>();
 	private Map<UUID, String>       firstPasswords = new HashMap<>();
@@ -23,6 +26,8 @@ public class LoginManager extends AbstractManager {
 
 	public LoginManager() {
 		super(UtariaLogin.getInstance());
+
+		this.messageManager = UtariaLogin.getInstance().getInstance(MessageManager.class);
 
 		this.registerListener(new LoginListener(this));
 	}
@@ -96,6 +101,9 @@ public class LoginManager extends AbstractManager {
 
 					// Petit son
 					player.playSound(player.getLocation(), Sound.NOTE_PIANO, 1f, 1f);
+
+					// Titre
+					this.messageManager.sendTitle(player, "Bonjour §e" + player.getName() + "§6 !", "Heureux de vous revoir ! Connectez-vous.", ChatColor.GOLD, ChatColor.AQUA, true);
 				} else {
 					PlayerUtil.sendCenteredMessage(player, "§e§lInscription");
 					player.sendMessage(" ");
@@ -106,6 +114,8 @@ public class LoginManager extends AbstractManager {
 
 					// Petit son
 					player.playSound(player.getLocation(), Sound.NOTE_PIANO, 1f, 1f);
+
+					this.messageManager.sendTitle(player, "Bienvenue §e" + player.getName() + "§6 !", "Ouvrez le tchat pour vous inscrire.", ChatColor.GOLD, ChatColor.AQUA, true);
 				}
 
 				player.sendMessage(" ");
@@ -160,7 +170,7 @@ public class LoginManager extends AbstractManager {
 			this.waitingPlayers.add(player.getUniqueId());
 	}
 	private void processLogin(final Player player, final String password) {
-		TaskUtil.runAsyncTask(() -> {
+		TaskUtil.runTaskOnMainThread(() -> {
 			// Le joueur est déjà inscrit, on regarde si le mot de passe correspond
 			// CONNEXION
 			AccountManager accountManager   = UtariaLogin.getInstance().getInstance(AccountManager.class);

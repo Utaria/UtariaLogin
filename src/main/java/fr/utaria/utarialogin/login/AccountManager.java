@@ -1,6 +1,6 @@
 package fr.utaria.utarialogin.login;
 
-import fr.utaria.utariaapi.AbstractManager;
+import fr.utaria.utariacore.AbstractManager;
 import fr.utaria.utariadatabase.result.DatabaseSet;
 import fr.utaria.utarialogin.Config;
 import fr.utaria.utarialogin.UtariaLogin;
@@ -15,7 +15,6 @@ public class AccountManager extends AbstractManager {
 
 	private Map<UUID, Boolean> playersRegistered = new HashMap<>();
 
-
 	public AccountManager() {
 		super(UtariaLogin.getInstance(), "global");
 	}
@@ -25,14 +24,13 @@ public class AccountManager extends AbstractManager {
 
 	}
 
-
 	public boolean playerRegistered(Player player) {
 		// Si le statut du joueur est en cache, on retourne directement la valeur.
 		if( this.playersRegistered.containsKey(player.getUniqueId()) )
 			return this.playersRegistered.get(player.getUniqueId());
 
 		DatabaseSet set = this.getDB().select("password").from(Config.PLAYERS_DB_TABLE)
-				                      .where("uuid = ?").attributes(player.getUniqueId().toString())
+				                      .where("playername = ?").attributes(player.getName())
 				                      .find();
 
 
@@ -51,11 +49,11 @@ public class AccountManager extends AbstractManager {
 
 		return false;
 	}
+
 	public boolean tryLoginPlayer(Player player, String password) {
 		return this.getDB().select().from(Config.PLAYERS_DB_TABLE).where("uuid = ?", "password = SHA1(?)")
 				           .attributes(player.getUniqueId().toString(), password).find() != null;
 	}
-
 
 	public void clearCacheFor(Player player) {
 		this.playersRegistered.remove(player.getUniqueId());

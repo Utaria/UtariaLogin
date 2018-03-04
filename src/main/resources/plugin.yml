@@ -1,5 +1,5 @@
 name: UtariaLogin
 author: Utarwyn
-version: 1.0.0
+version: 1.1.0
 main: fr.utaria.utarialogin.UtariaLogin
-depend: [UtariaAPI]
+depend: [UtariaCore]

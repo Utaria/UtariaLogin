@@ -1,10 +1,9 @@
 package fr.utaria.utarialogin.login;
 
-import fr.utaria.utariaapi.util.TaskUtil;
-import fr.utaria.utariaapi.util.TitleUtil;
+import fr.utaria.utariacore.util.PlayerUtil;
+import fr.utaria.utariacore.util.TaskUtil;
 import fr.utaria.utarialogin.UtariaLogin;
 import fr.utaria.utarialogin.world.WorldManager;
-import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -27,15 +26,11 @@ public class LoginListener implements Listener {
 	}
 
 
-	@EventHandler(priority = EventPriority.HIGHEST)
+	@EventHandler(priority = EventPriority.LOWEST)
 	public void onPlayerCommand(PlayerCommandPreprocessEvent event) {
-		// event.setCancelled(true);
-
-		// On supporte les commandes très connues des serveurs MC
-		String message = event.getMessage();
-
-		if (message.startsWith("/login ") || message.startsWith("/register "))
-			this.manager.checkPassword(event.getPlayer(), message.replace("/login ", "").replace("/register ", ""));
+		// Aucune commande autorisée
+		if (!event.getPlayer().isOp())
+			event.setCancelled(true);
 	}
 
 	@EventHandler
@@ -49,18 +44,30 @@ public class LoginListener implements Listener {
 	}
 
 	@EventHandler
-	public void onPlayerJoin(PlayerJoinEvent e) {
-		Player player = e.getPlayer();
+	public void onPlayerJoin(PlayerJoinEvent event) {
+		Player player = event.getPlayer();
+
+		PlayerUtil.hide(player);
 
 		// On prépare le joueur pour éviter les problèmes
 		// UUtil.preparePlayer(player);
 		TaskUtil.runTaskLater(() -> {
-			player.setGameMode(GameMode.SPECTATOR);
-			player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 1));
+			if (!player.isOp()) {
+				player.setGameMode(GameMode.SPECTATOR);
+				player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 1));
+
+				player.setFlySpeed(0f);
+				player.setWalkSpeed(0f);
+			} else {
+				player.setGameMode(GameMode.CREATIVE);
+				player.removePotionEffect(PotionEffectType.INVISIBILITY);
+				player.setFlySpeed(.1f);
+				player.setWalkSpeed(.1f);
+			}
 
 			player.teleport(UtariaLogin.getInstance().getInstance(WorldManager.class).getRandomHub());
 
-			TitleUtil.displayTitleToPlayer("Bienvenue sur Utaria !", "Ouvrez le tchat pour vous connecter", ChatColor.YELLOW, ChatColor.GRAY, player);
+			PlayerUtil.hide(player);
 		}, 5L);
 
 		// On indique au gestionnaire de logins que le joueur s'est connecté
@@ -71,8 +78,8 @@ public class LoginListener implements Listener {
 	}
 
 	@EventHandler
-	public void onPlayerQuit(PlayerQuitEvent e) {
-		Player player = e.getPlayer();
+	public void onPlayerQuit(PlayerQuitEvent event) {
+		Player player = event.getPlayer();
 
 		// On indique au gestionnaire de logins que le joueur s'est déconnecté
 		this.manager.newPlayerQuit(player);

@@ -7,23 +7,22 @@ import org.bukkit.entity.Player;
 public class RegistrationQuery implements IQuery {
 
 	private Player player;
+
 	private String password;
 
-
-	public RegistrationQuery(Player player, String password) {
+	RegistrationQuery(Player player, String password) {
 		this.player = player;
 		this.password = password;
 	}
 
-
 	@Override
 	public String getRequest() {
-		return "UPDATE " + Config.PLAYERS_DB_TABLE + " SET password = SHA1(?) WHERE uuid = ?";
+		return "UPDATE " + Config.PLAYERS_DB_TABLE + " SET password = SHA1(?) WHERE playername = ?";
 	}
 
 	@Override
 	public Object[] getAttributes() {
-		return new Object[] { this.password, this.player.getUniqueId().toString() };
+		return new Object[] { this.password, this.player.getName() };
 	}
 
 }
