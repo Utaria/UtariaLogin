@@ -99,8 +99,8 @@ public class LoginManager extends AbstractManager {
 					PlayerUtil.sendCenteredMessage(player, "§7pour vous connecter à Utaria.");
 					player.sendMessage(" ");
 
-					// Petit son
-					player.playSound(player.getLocation(), Sound.NOTE_PIANO, 1f, 1f);
+					// Petit son 1.8 DONC BUGUE
+					// player.playSound(player.getLocation(), Sound.NOTE_PIANO, 1f, 1f);
 
 					// Titre
 					this.messageManager.sendTitle(player, "Bonjour §e" + player.getName() + "§6 !", "Heureux de vous revoir ! Connectez-vous.", ChatColor.GOLD, ChatColor.AQUA, true);
@@ -112,8 +112,8 @@ public class LoginManager extends AbstractManager {
 					PlayerUtil.sendCenteredMessage(player, "§7pour pouvoir jouer dès maintenant sur §eUtaria§7 !");
 					player.sendMessage(" ");
 
-					// Petit son
-					player.playSound(player.getLocation(), Sound.NOTE_PIANO, 1f, 1f);
+					// Petit son 1.8 DONC BUGUE
+					// player.playSound(player.getLocation(), Sound.NOTE_PIANO, 1f, 1f);
 
 					this.messageManager.sendTitle(player, "Bienvenue §e" + player.getName() + "§6 !", "Ouvrez le tchat pour vous inscrire.", ChatColor.GOLD, ChatColor.AQUA, true);
 				}
@@ -161,7 +161,7 @@ public class LoginManager extends AbstractManager {
 			PlayerUtil.sendEmptyLine(player);
 
 			// Petit son
-			player.playSound(player.getLocation(), Sound.NOTE_BASS_GUITAR, 1f, 1f);
+			// player.playSound(player.getLocation(), Sound.NOTE_BASS_GUITAR, 1f, 1f);
 		}
 
 	}
@@ -183,7 +183,7 @@ public class LoginManager extends AbstractManager {
 					PlayerUtil.sendSuccessMessage(player, "Vous êtes maintenant connecté.");
 
 					// Petit son
-					player.playSound(player.getLocation(), Sound.LEVEL_UP, 1f, 1f);
+					// player.playSound(player.getLocation(), Sound.LEVEL_UP, 1f, 1f);
 
 					// On active la session du joueur et on le redirige vers le bon serveur !
 					this.activateSessionFor(player);
@@ -199,7 +199,7 @@ public class LoginManager extends AbstractManager {
 					PlayerUtil.sendEmptyLines(player, 3);
 
 					// Petit son
-					player.playSound(player.getLocation(), Sound.NOTE_BASS_GUITAR, 1f, 1f);
+					// player.playSound(player.getLocation(), Sound.NOTE_BASS_GUITAR, 1f, 1f);
 
 					// On attends que le joueur retape le mot de passe dans le tchat
 					this.waitForPassword(player);
@@ -219,7 +219,7 @@ public class LoginManager extends AbstractManager {
 					PlayerUtil.sendEmptyLines(player, 4);
 
 					// Petit son
-					player.playSound(player.getLocation(), Sound.NOTE_PIANO, 1f, 1f);
+					// player.playSound(player.getLocation(), Sound.NOTE_PIANO, 1f, 1f);
 
 					this.addFirstPasswordFor(player, password);
 
@@ -236,7 +236,7 @@ public class LoginManager extends AbstractManager {
 						// On inscrit le joueur
 						if (accountManager.tryRegisterPlayer(player, password)) {
 							PlayerUtil.sendSuccessMessage(player, "Vous êtes maintenant inscrit sur §bUtaria§a, merci !");
-							player.playSound(player.getLocation(), Sound.LEVEL_UP, 1f, 1f);
+							// player.playSound(player.getLocation(), Sound.LEVEL_UP, 1f, 1f);
 
 							this.redirectPlayer(player);
 						}
@@ -260,7 +260,7 @@ public class LoginManager extends AbstractManager {
 						PlayerUtil.sendEmptyLines(player, 3);
 
 						// Petit son
-						player.playSound(player.getLocation(), Sound.NOTE_BASS_GUITAR, 1f, 1f);
+						// player.playSound(player.getLocation(), Sound.NOTE_BASS_GUITAR, 1f, 1f);
 
 						// On recommence la procédure de zéro
 						this.removeFirstPasswordFor(player);

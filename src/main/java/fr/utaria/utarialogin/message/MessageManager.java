@@ -37,8 +37,8 @@ public class MessageManager extends AbstractManager {
 	}
 
 	public void sendTitle(Player player, String title, String subtitle, ChatColor titleColor, ChatColor subtitleColor, boolean persist) {
-		TitleUtil.Title titleObj = TitleUtil.displayTitleToPlayer(title, subtitle, titleColor, subtitleColor, player);
-		if (persist) this.lastTitles.put(player, titleObj);
+		/*TitleUtil.Title titleObj = TitleUtil.displayTitleToPlayer(title, subtitle, titleColor, subtitleColor, player);
+		if (persist) this.lastTitles.put(player, titleObj);*/
 	}
 
 }
