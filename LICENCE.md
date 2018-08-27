@@ -35,4 +35,4 @@ Ils déclarent par la même occasion qu'ils sont propriétaires de leur contribu
 
 ## Licence des projets tiers
 
-> Section vide pour le moment.
+Aucun projet tiers utilisé.

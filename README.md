@@ -26,7 +26,7 @@ Il intègre les fonctionnalités suivantes :
 
 ### Un exemple d'utilisation en jeu ?
 
-
+> Bientôt. Très bientôt.
 
 ### Quelles technologies utilise-t-il ?
 
